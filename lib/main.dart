@@ -24,8 +24,19 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Bangladesh Landmark Manager',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF1565C0),
+            brightness: Brightness.light,
+          ),
           scaffoldBackgroundColor: const Color(0xFFFAFAFA),
+          appBarTheme: const AppBarTheme(elevation: 2, centerTitle: false),
+          cardTheme: CardThemeData(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         ),
         initialRoute: '/',
         routes: {
@@ -61,18 +72,30 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bangladesh Landmark Manager'),
+        elevation: 2,
+        title: const Text(
+          'Bangladesh Landmark Manager',
+          style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+        ),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: Colors.white,
         actions: [
-          // Offline indicator placeholder
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Consumer<LandmarkProvider>(
               builder: (context, p, _) {
-                return Icon(
-                  p.isOnline ? Icons.cloud_done : Icons.cloud_off,
-                  color: p.isOnline ? Colors.greenAccent : Colors.orangeAccent,
+                return Tooltip(
+                  message: p.isOnline ? 'Online' : 'Offline',
+                  child: Icon(
+                    p.isOnline ? Icons.cloud_done : Icons.cloud_off,
+                    color: p.isOnline
+                        ? Colors.greenAccent
+                        : Colors.orangeAccent,
+                    size: 24,
+                  ),
                 );
               },
             ),
@@ -80,14 +103,23 @@ class _MainShellState extends State<MainShell> {
         ],
       ),
       body: _pages.elementAt(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Overview'),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Records'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_box),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onItemTapped,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.map_outlined),
+            selectedIcon: Icon(Icons.map),
+            label: 'Overview',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.list_outlined),
+            selectedIcon: Icon(Icons.list),
+            label: 'Records',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.add_box_outlined),
+            selectedIcon: Icon(Icons.add_box),
             label: 'New Entry',
           ),
         ],

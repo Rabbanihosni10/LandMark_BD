@@ -9,47 +9,107 @@ import '../models/landmark.dart';
 import 'package:intl/intl.dart';
 import 'new_entry.dart';
 
-class OverviewMapScreen extends StatelessWidget {
+class OverviewMapScreen extends StatefulWidget {
   const OverviewMapScreen({Key? key}) : super(key: key);
 
+  @override
+  State<OverviewMapScreen> createState() => _OverviewMapScreenState();
+}
+
+class _OverviewMapScreenState extends State<OverviewMapScreen> {
   static final LatLng _bangladeshCenter = LatLng(23.6850, 90.3563);
+  late MapController _mapController;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapController = MapController();
+  }
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<LandmarkProvider>(
       builder: (context, provider, _) {
-        return FlutterMap(
-          options: MapOptions(
-            center: _bangladeshCenter,
-            zoom: 6.5,
-            onTap: (_, __) {},
-          ),
+        return Stack(
           children: [
-            TileLayer(
-              urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              subdomains: const ['a', 'b', 'c'],
-              userAgentPackageName: 'com.example.landmark_bd',
-            ),
-            MarkerLayer(
-              markers: provider.items.map((Landmark lm) {
-                return Marker(
-                  width: 56,
-                  height: 56,
-                  point: LatLng(lm.latitude, lm.longitude),
-                  builder: (ctx) => GestureDetector(
-                    onTap: () => _showMarkerSheet(context, lm),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 36,
-                          color: Colors.redAccent,
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                center: _bangladeshCenter,
+                zoom: 6.5,
+                minZoom: 4.0,
+                maxZoom: 18.0,
+                onTap: (_, __) {},
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  subdomains: const ['a', 'b', 'c'],
+                  userAgentPackageName: 'com.example.landmark_bd',
+                ),
+                MarkerLayer(
+                  markers: provider.items.map((Landmark lm) {
+                    return Marker(
+                      width: 56,
+                      height: 56,
+                      point: LatLng(lm.latitude, lm.longitude),
+                      builder: (ctx) => GestureDetector(
+                        onTap: () => _showMarkerSheet(context, lm),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.location_on,
+                              size: 36,
+                              color: Colors.redAccent,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+            // Zoom controls - FAB buttons
+            Positioned(
+              right: 16,
+              bottom: 16,
+              child: Column(
+                children: [
+                  FloatingActionButton(
+                    mini: true,
+                    heroTag: 'zoom_in',
+                    onPressed: () {
+                      _mapController.move(
+                        _mapController.center,
+                        _mapController.zoom + 1,
+                      );
+                    },
+                    backgroundColor: Colors.white,
+                    child: const Icon(Icons.add, color: Colors.blue),
                   ),
-                );
-              }).toList(),
+                  const SizedBox(height: 8),
+                  FloatingActionButton(
+                    mini: true,
+                    heroTag: 'zoom_out',
+                    onPressed: () {
+                      _mapController.move(
+                        _mapController.center,
+                        _mapController.zoom - 1,
+                      );
+                    },
+                    backgroundColor: Colors.white,
+                    child: const Icon(Icons.remove, color: Colors.blue),
+                  ),
+                ],
+              ),
             ),
           ],
         );
