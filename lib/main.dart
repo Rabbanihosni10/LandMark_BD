@@ -6,6 +6,7 @@ import 'providers/landmark_provider.dart';
 import 'screens/overview_map.dart';
 import 'screens/records_list.dart';
 import 'screens/new_entry.dart';
+import 'screens/splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +27,11 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           scaffoldBackgroundColor: const Color(0xFFFAFAFA),
         ),
-        home: const MainShell(),
+        initialRoute: '/',
+        routes: {
+          '/': (ctx) => const SplashScreen(),
+          '/home': (ctx) => const MainShell(),
+        },
       ),
     );
   }

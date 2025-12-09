@@ -198,7 +198,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              Text('Image', style: Theme.of(context).textTheme.subtitle1),
+              Text('Image', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: _pickImage,

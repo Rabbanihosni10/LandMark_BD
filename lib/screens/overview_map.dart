@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../providers/landmark_provider.dart';
 import '../models/landmark.dart';
 import 'package:intl/intl.dart';
+import 'new_entry.dart';
 
 class OverviewMapScreen extends StatelessWidget {
   const OverviewMapScreen({Key? key}) : super(key: key);
