@@ -134,7 +134,8 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
       File? compressed;
       if (kIsWeb) {
         if (_pickedImage != null) {
-          imageBytes = await _pickedImage!.readAsBytes();
+          // reuse bytes read during pick if available to avoid a second read
+          imageBytes = _pickedImageBytes ?? await _pickedImage!.readAsBytes();
           imageFilename = _pickedImage!.name;
         }
       } else {
@@ -154,6 +155,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
           image: compressed,
           imageBytes: imageBytes,
           imageFilename: imageFilename,
+          rethrowOnFail: true,
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -174,6 +176,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
           image: compressed,
           imageBytes: imageBytes,
           imageFilename: imageFilename,
+          rethrowOnFail: true,
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

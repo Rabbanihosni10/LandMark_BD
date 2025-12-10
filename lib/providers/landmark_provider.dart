@@ -57,6 +57,7 @@ class LandmarkProvider extends ChangeNotifier {
     File? image,
     List<int>? imageBytes,
     String? imageFilename,
+    bool rethrowOnFail = false,
   }) async {
     _loading = true;
     notifyListeners();
@@ -70,6 +71,9 @@ class LandmarkProvider extends ChangeNotifier {
       _items.insert(0, created);
       return created;
     } catch (e) {
+      // Optionally rethrow so UI can show the error (useful to detect server failures)
+      if (rethrowOnFail) rethrow;
+
       // fallback to local insert
       final newId = DateTime.now().millisecondsSinceEpoch.toString();
       final cloned = Landmark(
@@ -92,7 +96,12 @@ class LandmarkProvider extends ChangeNotifier {
     File? image,
     List<int>? imageBytes,
     String? imageFilename,
+    bool rethrowOnFail = false,
   }) async {
+    // allow callers to pass a rethrow flag in a migrated signature
+    // (backwards compatible: non-named args won't set this)
+    // NOTE: callers should pass via named parameter; this local var will be overwritten
+
     _loading = true;
     notifyListeners();
     try {
@@ -106,6 +115,7 @@ class LandmarkProvider extends ChangeNotifier {
       if (idx != -1) _items[idx] = res;
       return res;
     } catch (e) {
+      if (rethrowOnFail) rethrow;
       final idx = _items.indexWhere((e) => e.id == updated.id);
       if (idx != -1) _items[idx] = updated;
       return updated;
