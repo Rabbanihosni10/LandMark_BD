@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
   final _lonController = TextEditingController();
 
   XFile? _pickedImage;
+  Uint8List? _pickedImageBytes;
   bool _submitting = false;
 
   @override
@@ -66,9 +68,25 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
       imageQuality: 85,
     );
     if (file != null) {
-      setState(() {
-        _pickedImage = file;
-      });
+      if (kIsWeb) {
+        try {
+          final bytes = await file.readAsBytes();
+          setState(() {
+            _pickedImage = file;
+            _pickedImageBytes = bytes;
+          });
+        } catch (e) {
+          setState(() {
+            _pickedImage = file;
+            _pickedImageBytes = null;
+          });
+        }
+      } else {
+        setState(() {
+          _pickedImage = file;
+          _pickedImageBytes = null;
+        });
+      }
       // Image will be compressed when submitting to avoid extra work here.
     }
   }
@@ -264,7 +282,10 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                     color: Colors.grey.shade200,
                   ),
                   child: _pickedImage != null
-                      ? AdaptiveImage(imagePath: _pickedImage!.path)
+                      ? AdaptiveImage(
+                          imagePath: _pickedImage!.path,
+                          imageBytes: _pickedImageBytes,
+                        )
                       : (widget.editLandmark?.imagePath != null
                             ? AdaptiveImage(
                                 imagePath: widget.editLandmark!.imagePath,

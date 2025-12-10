@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,13 +7,15 @@ import 'package:flutter/material.dart';
 /// Widget that displays an image from either a local file path or a network URL
 class AdaptiveImage extends StatelessWidget {
   final String? imagePath;
+  final Uint8List? imageBytes;
   final BoxFit fit;
   final double? width;
   final double? height;
 
   const AdaptiveImage({
     Key? key,
-    required this.imagePath,
+    this.imagePath,
+    this.imageBytes,
     this.fit = BoxFit.cover,
     this.width,
     this.height,
@@ -20,7 +23,7 @@ class AdaptiveImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (imagePath == null || imagePath!.isEmpty) {
+    if ((imagePath == null || imagePath!.isEmpty) && imageBytes == null) {
       return Container(
         width: width,
         height: height,
@@ -29,10 +32,29 @@ class AdaptiveImage extends StatelessWidget {
       );
     }
 
+    // If image bytes were provided (useful on web), show them first
+    if (imageBytes != null) {
+      return Image.memory(
+        imageBytes!,
+        fit: fit,
+        width: width,
+        height: height,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: width,
+            height: height,
+            color: Colors.grey.shade200,
+            child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
+          );
+        },
+      );
+    }
+
     // Check if it's a URL (starts with http, https, or /)
-    if (imagePath!.startsWith('http') ||
-        imagePath!.startsWith('https') ||
-        imagePath!.startsWith('/')) {
+    if (imagePath != null &&
+        (imagePath!.startsWith('http') ||
+            imagePath!.startsWith('https') ||
+            imagePath!.startsWith('/'))) {
       // Construct full URL if it's a relative path from API
       String imageUrl = imagePath!;
       if (!imageUrl.startsWith('http')) {
