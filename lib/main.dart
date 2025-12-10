@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'models/landmark.dart';
 import 'providers/landmark_provider.dart';
 import 'screens/overview_map.dart';
 import 'screens/records_list.dart';

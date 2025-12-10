@@ -18,9 +18,9 @@ class Landmark {
   factory Landmark.fromJson(Map<String, dynamic> json) => Landmark(
     id: json['id'].toString(),
     title: json['title'] ?? '',
-    latitude: (json['latitude'] as num).toDouble(),
-    longitude: (json['longitude'] as num).toDouble(),
-    imagePath: json['imagePath'],
+    latitude: (json['lat'] as num? ?? json['latitude'] as num).toDouble(),
+    longitude: (json['lon'] as num? ?? json['longitude'] as num).toDouble(),
+    imagePath: json['image'] ?? json['imagePath'],
   );
 
   Map<String, dynamic> toJson() => {

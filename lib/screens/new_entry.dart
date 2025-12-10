@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../models/landmark.dart';
@@ -64,7 +67,31 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
       setState(() {
         _pickedImage = file;
       });
-      // TODO: resize image to 800x600 before uploading using flutter_image_compress or image
+      // Image will be compressed when submitting to avoid extra work here.
+    }
+  }
+
+  Future<File?> _compressPickedImage() async {
+    if (_pickedImage == null) return null;
+    try {
+      final original = File(_pickedImage!.path);
+      final tmpDir = await getTemporaryDirectory();
+      final targetPath = p.join(
+        tmpDir.path,
+        'lm_upload_${DateTime.now().millisecondsSinceEpoch}${p.extension(original.path)}',
+      );
+
+      final result = await FlutterImageCompress.compressAndGetFile(
+        original.path,
+        targetPath,
+        minWidth: 800,
+        minHeight: 600,
+        quality: 88,
+        keepExif: true,
+      );
+      return result;
+    } catch (e) {
+      return File(_pickedImage!.path);
     }
   }
 
@@ -79,15 +106,17 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
 
       final provider = Provider.of<LandmarkProvider>(context, listen: false);
 
+      final compressed = await _compressPickedImage();
+
       if (widget.editLandmark != null) {
         final updated = Landmark(
           id: widget.editLandmark!.id,
           title: title,
           latitude: lat,
           longitude: lon,
-          imagePath: _pickedImage?.path ?? widget.editLandmark!.imagePath,
+          imagePath: compressed?.path ?? widget.editLandmark!.imagePath,
         );
-        await provider.updateLandmark(updated);
+        await provider.updateLandmark(updated, image: compressed);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Updated'),
@@ -100,9 +129,9 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
           title: title,
           latitude: lat,
           longitude: lon,
-          imagePath: _pickedImage?.path,
+          imagePath: compressed?.path,
         );
-        await provider.addLandmark(created);
+        await provider.addLandmark(created, image: compressed);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Created'),
