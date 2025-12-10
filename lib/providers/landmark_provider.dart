@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 
@@ -54,7 +53,7 @@ class LandmarkProvider extends ChangeNotifier {
 
   Future<Landmark> addLandmark(
     Landmark landmark, {
-    File? image,
+    dynamic image,
     List<int>? imageBytes,
     String? imageFilename,
     bool rethrowOnFail = false,
@@ -93,7 +92,7 @@ class LandmarkProvider extends ChangeNotifier {
 
   Future<Landmark> updateLandmark(
     Landmark updated, {
-    File? image,
+    dynamic image,
     List<int>? imageBytes,
     String? imageFilename,
     bool rethrowOnFail = false,

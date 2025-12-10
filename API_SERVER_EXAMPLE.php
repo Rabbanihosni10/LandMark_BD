@@ -1,36 +1,16 @@
 <?php
-/**
- * Complete REST API Server Implementation
- * File: api.php
- * 
- * Features:
- * - CORS headers for web access
- * - GET /api.php - fetch all landmarks
- * - POST /api.php - create landmark with image
- * - PUT /api.php - update landmark (x-www-form-urlencoded, no image) or POST with _method=PUT (multipart with image)
- * - DELETE /api.php - delete landmark
- * - POST /upload - separate upload endpoint (returns image URL/path)
- * 
- * Setup:
- * 1. Create "uploads" directory with write permissions: mkdir uploads && chmod 755 uploads
- * 2. Configure php.ini: upload_max_filesize=50M, post_max_size=50M
- * 3. Replace {YOUR_ORIGIN} with your domain (e.g., "http://localhost:3000")
- */
 
-// ============ CORS Headers ============
-header('Access-Control-Allow-Origin: *'); // For development; use specific origin in production
+header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization');
 header('Access-Control-Allow-Credentials: true');
 
-// Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// ============ Database Simulation (Replace with real DB) ============
-// Using a JSON file to simulate database; in production use MySQL/PostgreSQL
+
 $dbFile = __DIR__ . '/landmarks.json';
 function getDb() {
     global $dbFile;
@@ -49,7 +29,6 @@ function generateId() {
     return uniqid('lm_', true);
 }
 
-// ============ Endpoint: GET /api.php - Fetch all landmarks ============
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     header('Content-Type: application/json');
     $db = getDb();
@@ -57,8 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit();
 }
 
-// ============ Endpoint: POST /upload - Upload image only ============
-// Separate endpoint for uploading images (optional, for cleaner architecture)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && preg_match('/\/upload\/?$/i', $_SERVER['REQUEST_URI'])) {
     header('Content-Type: application/json');
     
@@ -90,7 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && preg_match('/\/upload\/?$/i', $_SER
     exit();
 }
 
-// ============ Endpoint: POST /api.php - Create landmark ============
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     
@@ -104,7 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Handle image upload
     $imagePath = null;
     if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         $uploadsDir = __DIR__ . '/uploads';
@@ -124,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $imagePath = '/uploads/' . $name;
     }
 
-    // Create landmark record
+
     $id = generateId();
     $landmark = [
         'id' => $id,
@@ -144,11 +119,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-// ============ Endpoint: PUT /api.php - Update landmark ============
+
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     header('Content-Type: application/json');
 
-    // Parse form data (x-www-form-urlencoded)
     parse_str(file_get_contents('php://input'), $data);
     
     $id = $data['id'] ?? $_POST['id'] ?? null;
@@ -186,8 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     exit();
 }
 
-// ============ Endpoint: POST /api.php with _method=PUT - Update with image ============
-// This is called when updating with multipart/form-data (method override)
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_method'] ?? '') === 'PUT') {
     header('Content-Type: application/json');
 
@@ -212,7 +185,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_method'] ?? '') === 'PUT'
             if ($lat !== null) $item['lat'] = (double) $lat;
             if ($lon !== null) $item['lon'] = (double) $lon;
 
-            // Handle image upload if provided
             if (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 $uploadsDir = __DIR__ . '/uploads';
                 if (!is_dir($uploadsDir)) {
@@ -246,7 +218,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_method'] ?? '') === 'PUT'
     exit();
 }
 
-// ============ Endpoint: DELETE /api.php - Delete landmark ============
 if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     header('Content-Type: application/json');
 
@@ -276,7 +247,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     exit();
 }
 
-// Method not supported
 http_response_code(405);
 header('Content-Type: application/json');
 echo json_encode(['error' => 'Method not supported']);

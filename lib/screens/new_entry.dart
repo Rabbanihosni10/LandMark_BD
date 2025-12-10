@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
@@ -91,20 +90,20 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
     }
   }
 
-  Future<File?> _compressPickedImage() async {
+  Future<dynamic> _compressPickedImage() async {
     if (_pickedImage == null) return null;
     // On web we cannot create File objects or compress using native APIs.
     if (kIsWeb) return null;
     try {
-      final original = File(_pickedImage!.path);
+      final originalPath = _pickedImage!.path;
       final tmpDir = await getTemporaryDirectory();
       final targetPath = p.join(
         tmpDir.path,
-        'lm_upload_${DateTime.now().millisecondsSinceEpoch}${p.extension(original.path)}',
+        'lm_upload_${DateTime.now().millisecondsSinceEpoch}${p.extension(originalPath)}',
       );
 
       final result = await FlutterImageCompress.compressAndGetFile(
-        original.path,
+        originalPath,
         targetPath,
         minWidth: 800,
         minHeight: 600,
@@ -113,7 +112,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
       );
       return result;
     } catch (e) {
-      return File(_pickedImage!.path);
+      return _pickedImage!.path;
     }
   }
 
@@ -131,7 +130,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
       // Handle image for web (bytes) and mobile (File/compressed File)
       List<int>? imageBytes;
       String? imageFilename;
-      File? compressed;
+      dynamic compressed;
       if (kIsWeb) {
         if (_pickedImage != null) {
           // reuse bytes read during pick if available to avoid a second read
@@ -188,48 +187,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
 
       Navigator.of(context).pop();
     } catch (e) {
-      // Show error dialog but keep the form open so user can retry
-      // Data has been saved locally as fallback
-      await showDialog<void>(
-        context: context,
-        builder: (c) => AlertDialog(
-          title: const Text('Server Error'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Data was saved locally, but failed to sync with server:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '$e',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Check your network and try again. Your data will sync when the server is reachable.',
-                style: TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(c).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-      // Show a snackbar to acknowledge local save
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✓ Saved locally | Server sync failed'),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 4),
-        ),
-      );
+      print('Error: $e');
     } finally {
       setState(() => _submitting = false);
     }

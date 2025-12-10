@@ -1,4 +1,4 @@
-import 'dart:io';
+// Avoid importing `dart:io` here so the code can run on web.
 
 import 'package:dio/dio.dart';
 
@@ -62,14 +62,13 @@ class ApiService {
 
   Future<Landmark> createLandmark(
     Landmark lm, {
-    File? imageFile,
+    dynamic imageFile,
     List<int>? imageBytes,
     String? imageFilename,
   }) async {
     if (ApiConfig.useLocalMockApi) {
       return _mockApi.createLandmark(
         lm,
-        imageFile: imageFile,
         imageBytes: imageBytes,
         imageFilename: imageFilename,
       );
@@ -82,7 +81,7 @@ class ApiService {
         ..add(MapEntry('lon', lm.longitude.toString()));
 
       if (imageFile != null) {
-        final fileName = imageFile.path.split(Platform.pathSeparator).last;
+        final fileName = imageFile.path.split(RegExp(r'[/\\]')).last;
         form.files.add(
           MapEntry(
             'image',
@@ -116,14 +115,13 @@ class ApiService {
 
   Future<Landmark> updateLandmark(
     Landmark lm, {
-    File? imageFile,
+    dynamic imageFile,
     List<int>? imageBytes,
     String? imageFilename,
   }) async {
     if (ApiConfig.useLocalMockApi) {
       return _mockApi.updateLandmark(
         lm,
-        imageFile: imageFile,
         imageBytes: imageBytes,
         imageFilename: imageFilename,
       );
@@ -158,7 +156,7 @@ class ApiService {
         ..add(MapEntry('_method', 'PUT'));
 
       if (imageFile != null) {
-        final fileName = imageFile.path.split(Platform.pathSeparator).last;
+        final fileName = imageFile.path.split(RegExp(r'[/\\]')).last;
         form.files.add(
           MapEntry(
             'image',

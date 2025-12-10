@@ -1,15 +1,16 @@
-import 'dart:io';
 import '../models/landmark.dart';
 
 class MockApiService {
   static final MockApiService _instance = MockApiService._internal();
   late List<Landmark> _mockData;
+  late Map<String, List<int>> _imageStore;
 
   factory MockApiService() {
     return _instance;
   }
 
   MockApiService._internal() {
+    _imageStore = {};
     _mockData = [
       Landmark(
         id: 'mock_1',
@@ -35,20 +36,36 @@ class MockApiService {
     ];
   }
 
+  Future<String?> _saveImage(
+    List<int>? imageBytes,
+    String? imageFilename,
+  ) async {
+    if (imageBytes != null && imageFilename != null) {
+      try {
+        final imageId =
+            'img_${DateTime.now().millisecondsSinceEpoch}_$imageFilename';
+        _imageStore[imageId] = imageBytes;
+        return imageId;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
   Future<List<Landmark>> fetchLandmarks() async {
-    await Future.delayed(
-      const Duration(milliseconds: 500),
-    ); // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 500));
     return List.from(_mockData);
   }
 
   Future<Landmark> createLandmark(
     Landmark lm, {
-    File? imageFile,
     List<int>? imageBytes,
     String? imageFilename,
   }) async {
     await Future.delayed(const Duration(milliseconds: 800));
+
+    final imagePath = await _saveImage(imageBytes, imageFilename);
 
     final newId = 'mock_${DateTime.now().millisecondsSinceEpoch}';
     final created = Landmark(
@@ -56,7 +73,7 @@ class MockApiService {
       title: lm.title,
       latitude: lm.latitude,
       longitude: lm.longitude,
-      imagePath: imageFile?.path ?? lm.imagePath,
+      imagePath: imagePath,
     );
     _mockData.insert(0, created);
     return created;
@@ -64,7 +81,6 @@ class MockApiService {
 
   Future<Landmark> updateLandmark(
     Landmark lm, {
-    File? imageFile,
     List<int>? imageBytes,
     String? imageFilename,
   }) async {
@@ -75,12 +91,17 @@ class MockApiService {
       throw Exception('Landmark not found');
     }
 
+    String? imagePath = _mockData[idx].imagePath;
+    if (imageBytes != null && imageFilename != null) {
+      imagePath = await _saveImage(imageBytes, imageFilename) ?? imagePath;
+    }
+
     final updated = Landmark(
       id: lm.id,
       title: lm.title,
       latitude: lm.latitude,
       longitude: lm.longitude,
-      imagePath: imageFile?.path ?? _mockData[idx].imagePath,
+      imagePath: imagePath,
     );
     _mockData[idx] = updated;
     return updated;

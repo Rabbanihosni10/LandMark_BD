@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
@@ -89,42 +88,24 @@ class AdaptiveImage extends StatelessWidget {
       );
     }
 
-    // On web, we can't use Image.file(), show a placeholder
-    if (kIsWeb) {
-      return Container(
-        width: width,
-        height: height,
-        color: Colors.grey.shade200,
-        child: const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.image, size: 36, color: Colors.grey),
-              SizedBox(height: 8),
-              Text(
-                'Image preview not available\non web',
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Otherwise treat as local file path (only on mobile/desktop)
-    return Image.file(
-      File(imagePath!),
-      fit: fit,
+    // If we reached here and we don't have bytes or a network URL,
+    // attempt to show a simple placeholder (avoids importing dart:io
+    // which is unsupported on web). On non-web platforms a better
+    // local-file preview could be added later with conditional imports.
+    return Container(
       width: width,
       height: height,
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          width: width,
-          height: height,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
-        );
-      },
+      color: Colors.grey.shade200,
+      child: const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.image, size: 36, color: Colors.grey),
+            SizedBox(height: 8),
+            Text('Image preview not available', textAlign: TextAlign.center),
+          ],
+        ),
+      ),
     );
   }
 }
