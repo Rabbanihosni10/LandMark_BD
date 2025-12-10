@@ -159,7 +159,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Updated'),
+            content: Text('Updated successfully!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -180,7 +180,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Created'),
+            content: Text('Created successfully!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -188,17 +188,46 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
 
       Navigator.of(context).pop();
     } catch (e) {
+      // Show error dialog but keep the form open so user can retry
+      // Data has been saved locally as fallback
       await showDialog<void>(
         context: context,
         builder: (c) => AlertDialog(
-          title: const Text('Error'),
-          content: Text('Failed to save: $e'),
+          title: const Text('Server Error'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Data was saved locally, but failed to sync with server:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$e',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Check your network and try again. Your data will sync when the server is reachable.',
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(c).pop(),
-              child: const Text('Dismiss'),
+              child: const Text('OK'),
             ),
           ],
+        ),
+      );
+      // Show a snackbar to acknowledge local save
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✓ Saved locally | Server sync failed'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 4),
         ),
       );
     } finally {

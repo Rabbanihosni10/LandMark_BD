@@ -71,10 +71,8 @@ class LandmarkProvider extends ChangeNotifier {
       _items.insert(0, created);
       return created;
     } catch (e) {
-      // Optionally rethrow so UI can show the error (useful to detect server failures)
-      if (rethrowOnFail) rethrow;
-
-      // fallback to local insert
+      // If rethrowOnFail is true, insert locally AND rethrow so UI shows error + fallback
+      // If false (default), silently insert locally (offline fallback)
       final newId = DateTime.now().millisecondsSinceEpoch.toString();
       final cloned = Landmark(
         id: newId,
@@ -84,6 +82,8 @@ class LandmarkProvider extends ChangeNotifier {
         imagePath: image?.path ?? landmark.imagePath,
       );
       _items.insert(0, cloned);
+      if (rethrowOnFail)
+        rethrow; // Insert first, then rethrow so data is saved locally
       return cloned;
     } finally {
       _loading = false;
@@ -115,9 +115,10 @@ class LandmarkProvider extends ChangeNotifier {
       if (idx != -1) _items[idx] = res;
       return res;
     } catch (e) {
-      if (rethrowOnFail) rethrow;
+      // Insert locally first, then rethrow if requested (so data is saved + user sees error)
       final idx = _items.indexWhere((e) => e.id == updated.id);
       if (idx != -1) _items[idx] = updated;
+      if (rethrowOnFail) rethrow;
       return updated;
     } finally {
       _loading = false;

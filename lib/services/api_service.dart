@@ -4,14 +4,17 @@ import 'package:dio/dio.dart';
 
 import '../config.dart';
 import '../models/landmark.dart';
+import 'mock_api_service.dart';
 
 class ApiService {
   // Use the baseUrl from config
   static String get baseUrl => ApiConfig.baseUrl;
 
   late final Dio _dio;
+  late final MockApiService _mockApi;
 
   ApiService({Dio? dio}) {
+    _mockApi = MockApiService();
     _dio =
         dio ??
         Dio(
@@ -35,6 +38,10 @@ class ApiService {
   }
 
   Future<List<Landmark>> fetchLandmarks() async {
+    if (ApiConfig.useLocalMockApi) {
+      print('Using MOCK API for fetchLandmarks');
+      return _mockApi.fetchLandmarks();
+    }
     try {
       final resp = await _dio.get(ApiConfig.apiEndpoint);
       if (resp.statusCode == 200) {
@@ -62,6 +69,15 @@ class ApiService {
     List<int>? imageBytes,
     String? imageFilename,
   }) async {
+    if (ApiConfig.useLocalMockApi) {
+      print('Using MOCK API for createLandmark');
+      return _mockApi.createLandmark(
+        lm,
+        imageFile: imageFile,
+        imageBytes: imageBytes,
+        imageFilename: imageFilename,
+      );
+    }
     try {
       final form = FormData();
       form.fields
@@ -108,6 +124,15 @@ class ApiService {
     List<int>? imageBytes,
     String? imageFilename,
   }) async {
+    if (ApiConfig.useLocalMockApi) {
+      print('Using MOCK API for updateLandmark');
+      return _mockApi.updateLandmark(
+        lm,
+        imageFile: imageFile,
+        imageBytes: imageBytes,
+        imageFilename: imageFilename,
+      );
+    }
     try {
       // If there's no image to upload, send a true PUT using x-www-form-urlencoded
       // as required by the API spec. When an image is present we use multipart
@@ -176,6 +201,10 @@ class ApiService {
   }
 
   Future<void> deleteLandmark(String id) async {
+    if (ApiConfig.useLocalMockApi) {
+      print('Using MOCK API for deleteLandmark');
+      return _mockApi.deleteLandmark(id);
+    }
     try {
       final resp = await _dio.post(
         ApiConfig.apiEndpoint,
