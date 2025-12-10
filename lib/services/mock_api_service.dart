@@ -1,8 +1,6 @@
 import 'dart:io';
 import '../models/landmark.dart';
 
-/// Mock API service that simulates server responses locally
-/// Useful for testing without a real server
 class MockApiService {
   static final MockApiService _instance = MockApiService._internal();
   late List<Landmark> _mockData;
@@ -50,9 +48,7 @@ class MockApiService {
     List<int>? imageBytes,
     String? imageFilename,
   }) async {
-    await Future.delayed(
-      const Duration(milliseconds: 800),
-    ); // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 800));
 
     final newId = 'mock_${DateTime.now().millisecondsSinceEpoch}';
     final created = Landmark(
@@ -63,7 +59,6 @@ class MockApiService {
       imagePath: imageFile?.path ?? lm.imagePath,
     );
     _mockData.insert(0, created);
-    print('MockAPI: Created landmark $newId');
     return created;
   }
 
@@ -73,9 +68,7 @@ class MockApiService {
     List<int>? imageBytes,
     String? imageFilename,
   }) async {
-    await Future.delayed(
-      const Duration(milliseconds: 800),
-    ); // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 800));
 
     final idx = _mockData.indexWhere((e) => e.id == lm.id);
     if (idx == -1) {
@@ -90,20 +83,16 @@ class MockApiService {
       imagePath: imageFile?.path ?? _mockData[idx].imagePath,
     );
     _mockData[idx] = updated;
-    print('MockAPI: Updated landmark ${lm.id}');
     return updated;
   }
 
   Future<void> deleteLandmark(String id) async {
-    await Future.delayed(
-      const Duration(milliseconds: 500),
-    ); // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 500));
 
     final idx = _mockData.indexWhere((e) => e.id == id);
     if (idx == -1) {
       throw Exception('Landmark not found');
     }
     _mockData.removeAt(idx);
-    print('MockAPI: Deleted landmark $id');
   }
 }

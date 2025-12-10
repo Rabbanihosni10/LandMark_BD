@@ -38,10 +38,7 @@ class ApiService {
   }
 
   Future<List<Landmark>> fetchLandmarks() async {
-    if (ApiConfig.useLocalMockApi) {
-      print('Using MOCK API for fetchLandmarks');
-      return _mockApi.fetchLandmarks();
-    }
+    if (ApiConfig.useLocalMockApi) return _mockApi.fetchLandmarks();
     try {
       final resp = await _dio.get(ApiConfig.apiEndpoint);
       if (resp.statusCode == 200) {
@@ -70,7 +67,6 @@ class ApiService {
     String? imageFilename,
   }) async {
     if (ApiConfig.useLocalMockApi) {
-      print('Using MOCK API for createLandmark');
       return _mockApi.createLandmark(
         lm,
         imageFile: imageFile,
@@ -125,7 +121,6 @@ class ApiService {
     String? imageFilename,
   }) async {
     if (ApiConfig.useLocalMockApi) {
-      print('Using MOCK API for updateLandmark');
       return _mockApi.updateLandmark(
         lm,
         imageFile: imageFile,
@@ -134,9 +129,6 @@ class ApiService {
       );
     }
     try {
-      // If there's no image to upload, send a true PUT using x-www-form-urlencoded
-      // as required by the API spec. When an image is present we use multipart
-      // (method override) because many PHP servers expect multipart uploads.
       if (imageFile == null && (imageBytes == null || imageFilename == null)) {
         final data = {
           'id': lm.id,
@@ -157,8 +149,6 @@ class ApiService {
         );
       }
 
-      // Multipart upload (image present). Use POST with _method=PUT so server
-      // can process file upload as part of the update.
       final form = FormData();
       form.fields
         ..add(MapEntry('id', lm.id))
@@ -202,7 +192,6 @@ class ApiService {
 
   Future<void> deleteLandmark(String id) async {
     if (ApiConfig.useLocalMockApi) {
-      print('Using MOCK API for deleteLandmark');
       return _mockApi.deleteLandmark(id);
     }
     try {
