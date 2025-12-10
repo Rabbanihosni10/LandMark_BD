@@ -109,6 +109,31 @@ class ApiService {
     String? imageFilename,
   }) async {
     try {
+      // If there's no image to upload, send a true PUT using x-www-form-urlencoded
+      // as required by the API spec. When an image is present we use multipart
+      // (method override) because many PHP servers expect multipart uploads.
+      if (imageFile == null && (imageBytes == null || imageFilename == null)) {
+        final data = {
+          'id': lm.id,
+          'title': lm.title,
+          'lat': lm.latitude.toString(),
+          'lon': lm.longitude.toString(),
+        };
+        final resp = await _dio.put(
+          ApiConfig.apiEndpoint,
+          data: data,
+          options: Options(contentType: Headers.formUrlEncodedContentType),
+        );
+        if (resp.statusCode == 200) {
+          return Landmark.fromJson(resp.data as Map<String, dynamic>);
+        }
+        throw Exception(
+          'Failed to update landmark: ${resp.statusCode} ${resp.statusMessage}',
+        );
+      }
+
+      // Multipart upload (image present). Use POST with _method=PUT so server
+      // can process file upload as part of the update.
       final form = FormData();
       form.fields
         ..add(MapEntry('id', lm.id))
