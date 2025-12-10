@@ -56,7 +56,12 @@ class ApiService {
     }
   }
 
-  Future<Landmark> createLandmark(Landmark lm, {File? image}) async {
+  Future<Landmark> createLandmark(
+    Landmark lm, {
+    File? imageFile,
+    List<int>? imageBytes,
+    String? imageFilename,
+  }) async {
     try {
       final form = FormData();
       form.fields
@@ -64,12 +69,19 @@ class ApiService {
         ..add(MapEntry('lat', lm.latitude.toString()))
         ..add(MapEntry('lon', lm.longitude.toString()));
 
-      if (image != null) {
-        final fileName = image.path.split(Platform.pathSeparator).last;
+      if (imageFile != null) {
+        final fileName = imageFile.path.split(Platform.pathSeparator).last;
         form.files.add(
           MapEntry(
             'image',
-            await MultipartFile.fromFile(image.path, filename: fileName),
+            await MultipartFile.fromFile(imageFile.path, filename: fileName),
+          ),
+        );
+      } else if (imageBytes != null && imageFilename != null) {
+        form.files.add(
+          MapEntry(
+            'image',
+            MultipartFile.fromBytes(imageBytes, filename: imageFilename),
           ),
         );
       }
@@ -90,7 +102,12 @@ class ApiService {
     }
   }
 
-  Future<Landmark> updateLandmark(Landmark lm, {File? image}) async {
+  Future<Landmark> updateLandmark(
+    Landmark lm, {
+    File? imageFile,
+    List<int>? imageBytes,
+    String? imageFilename,
+  }) async {
     try {
       final form = FormData();
       form.fields
@@ -100,12 +117,19 @@ class ApiService {
         ..add(MapEntry('lon', lm.longitude.toString()))
         ..add(MapEntry('_method', 'PUT'));
 
-      if (image != null) {
-        final fileName = image.path.split(Platform.pathSeparator).last;
+      if (imageFile != null) {
+        final fileName = imageFile.path.split(Platform.pathSeparator).last;
         form.files.add(
           MapEntry(
             'image',
-            await MultipartFile.fromFile(image.path, filename: fileName),
+            await MultipartFile.fromFile(imageFile.path, filename: fileName),
+          ),
+        );
+      } else if (imageBytes != null && imageFilename != null) {
+        form.files.add(
+          MapEntry(
+            'image',
+            MultipartFile.fromBytes(imageBytes, filename: imageFilename),
           ),
         );
       }

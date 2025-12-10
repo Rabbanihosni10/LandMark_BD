@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -6,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/landmark_provider.dart';
 import '../models/landmark.dart';
+import '../widgets/adaptive_image.dart';
 import 'package:intl/intl.dart';
 import 'new_entry.dart';
 
@@ -155,9 +155,7 @@ class _OverviewMapScreenState extends State<OverviewMapScreen> {
                     width: 88,
                     height: 66,
                     color: Colors.grey.shade200,
-                    child: lm.imagePath != null
-                        ? Image.file(File(lm.imagePath!), fit: BoxFit.cover)
-                        : const Icon(Icons.image, size: 36, color: Colors.grey),
+                    child: AdaptiveImage(imagePath: lm.imagePath),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

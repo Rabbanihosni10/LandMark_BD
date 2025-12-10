@@ -52,11 +52,21 @@ class LandmarkProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Landmark> addLandmark(Landmark landmark, {File? image}) async {
+  Future<Landmark> addLandmark(
+    Landmark landmark, {
+    File? image,
+    List<int>? imageBytes,
+    String? imageFilename,
+  }) async {
     _loading = true;
     notifyListeners();
     try {
-      final created = await _api.createLandmark(landmark, image: image);
+      final created = await _api.createLandmark(
+        landmark,
+        imageFile: image,
+        imageBytes: imageBytes,
+        imageFilename: imageFilename,
+      );
       _items.insert(0, created);
       return created;
     } catch (e) {
@@ -77,11 +87,21 @@ class LandmarkProvider extends ChangeNotifier {
     }
   }
 
-  Future<Landmark> updateLandmark(Landmark updated, {File? image}) async {
+  Future<Landmark> updateLandmark(
+    Landmark updated, {
+    File? image,
+    List<int>? imageBytes,
+    String? imageFilename,
+  }) async {
     _loading = true;
     notifyListeners();
     try {
-      final res = await _api.updateLandmark(updated, image: image);
+      final res = await _api.updateLandmark(
+        updated,
+        imageFile: image,
+        imageBytes: imageBytes,
+        imageFilename: imageFilename,
+      );
       final idx = _items.indexWhere((e) => e.id == res.id);
       if (idx != -1) _items[idx] = res;
       return res;

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,6 +11,7 @@ import 'package:provider/provider.dart';
 
 import '../models/landmark.dart';
 import '../providers/landmark_provider.dart';
+import '../widgets/adaptive_image.dart';
 
 class NewEntryScreen extends StatefulWidget {
   final Landmark? editLandmark;
@@ -73,6 +75,8 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
 
   Future<File?> _compressPickedImage() async {
     if (_pickedImage == null) return null;
+    // On web we cannot create File objects or compress using native APIs.
+    if (kIsWeb) return null;
     try {
       final original = File(_pickedImage!.path);
       final tmpDir = await getTemporaryDirectory();
@@ -106,7 +110,18 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
 
       final provider = Provider.of<LandmarkProvider>(context, listen: false);
 
-      final compressed = await _compressPickedImage();
+      // Handle image for web (bytes) and mobile (File/compressed File)
+      List<int>? imageBytes;
+      String? imageFilename;
+      File? compressed;
+      if (kIsWeb) {
+        if (_pickedImage != null) {
+          imageBytes = await _pickedImage!.readAsBytes();
+          imageFilename = _pickedImage!.name;
+        }
+      } else {
+        compressed = await _compressPickedImage();
+      }
 
       if (widget.editLandmark != null) {
         final updated = Landmark(
@@ -116,7 +131,12 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
           longitude: lon,
           imagePath: compressed?.path ?? widget.editLandmark!.imagePath,
         );
-        await provider.updateLandmark(updated, image: compressed);
+        await provider.updateLandmark(
+          updated,
+          image: compressed,
+          imageBytes: imageBytes,
+          imageFilename: imageFilename,
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Updated'),
@@ -131,7 +151,12 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
           longitude: lon,
           imagePath: compressed?.path,
         );
-        await provider.addLandmark(created, image: compressed);
+        await provider.addLandmark(
+          created,
+          image: compressed,
+          imageBytes: imageBytes,
+          imageFilename: imageFilename,
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Created'),
@@ -239,11 +264,10 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                     color: Colors.grey.shade200,
                   ),
                   child: _pickedImage != null
-                      ? Image.file(File(_pickedImage!.path), fit: BoxFit.cover)
+                      ? AdaptiveImage(imagePath: _pickedImage!.path)
                       : (widget.editLandmark?.imagePath != null
-                            ? Image.file(
-                                File(widget.editLandmark!.imagePath!),
-                                fit: BoxFit.cover,
+                            ? AdaptiveImage(
+                                imagePath: widget.editLandmark!.imagePath,
                               )
                             : Center(
                                 child: Column(
