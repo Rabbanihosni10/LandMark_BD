@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/landmark.dart';
 import '../providers/landmark_provider.dart';
 import 'new_entry.dart';
+import '../widgets/landmark_card.dart';
+import 'landmark_detail.dart';
 
 class RecordsListScreen extends StatelessWidget {
   const RecordsListScreen({Key? key}) : super(key: key);
@@ -56,100 +57,54 @@ class RecordsListScreen extends StatelessWidget {
             itemCount: items.length,
             itemBuilder: (ctx, i) {
               final lm = items[i];
-              final colorScheme = Theme.of(context).colorScheme;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Dismissible(
-                  key: ValueKey(lm.id),
-                  background: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade400,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.only(left: 24),
-                    child: const Icon(Icons.edit, color: Colors.white),
-                  ),
-                  secondaryBackground: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade400,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 24),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  confirmDismiss: (direction) async {
-                    if (direction == DismissDirection.startToEnd) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => NewEntryScreen(editLandmark: lm),
-                        ),
-                      );
-                      return false;
-                    } else {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (c) => AlertDialog(
-                          title: const Text('Delete landmark'),
-                          content: Text('Delete "${lm.title}"?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(c).pop(false),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(c).pop(true),
-                              child: const Text('Delete'),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirmed == true) {
-                        await provider.deleteLandmark(lm.id);
+                child: LandmarkCard(
+                  landmark: lm,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => LandmarkDetailScreen(landmark: lm),
+                      ),
+                    );
+                  },
+                  onEdit: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => NewEntryScreen(editLandmark: lm),
+                      ),
+                    );
+                  },
+                  onDelete: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (c) => AlertDialog(
+                        title: const Text('Delete landmark'),
+                        content: Text('Delete "${lm.title}"?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(c).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(c).pop(true),
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true) {
+                      await provider.deleteLandmark(lm.id);
+                      if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Deleted'),
                             backgroundColor: Colors.green,
                           ),
                         );
-                        return true;
                       }
-                      return false;
                     }
                   },
-                  child: Card(
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      leading: Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: colorScheme.primaryContainer,
-                        ),
-                        child: Icon(
-                          Icons.location_city,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      title: Text(
-                        lm.title,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          '📍 ${lm.latitude.toStringAsFixed(4)}, ${lm.longitude.toStringAsFixed(4)}',
-                          style: TextStyle(color: colorScheme.outline),
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.more_vert, color: colorScheme.outline),
-                        onPressed: () => _showCardActions(context, lm),
-                      ),
-                    ),
-                  ),
                 ),
               );
             },
@@ -159,64 +114,5 @@ class RecordsListScreen extends StatelessWidget {
     );
   }
 
-  void _showCardActions(BuildContext context, Landmark lm) {
-    showModalBottomSheet(
-      context: context,
-      builder: (c) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text('Edit'),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => NewEntryScreen(editLandmark: lm),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.redAccent),
-              title: const Text('Delete'),
-              onTap: () async {
-                Navigator.of(context).pop();
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (c) => AlertDialog(
-                    title: const Text('Delete landmark'),
-                    content: Text('Delete "${lm.title}"?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(c).pop(false),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(c).pop(true),
-                        child: const Text('Delete'),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirmed == true) {
-                  await Provider.of<LandmarkProvider>(
-                    context,
-                    listen: false,
-                  ).deleteLandmark(lm.id);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Deleted'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Actions are handled inline in the card callbacks now.
 }

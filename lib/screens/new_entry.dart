@@ -31,6 +31,7 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
   XFile? _pickedImage;
   Uint8List? _pickedImageBytes;
   bool _submitting = false;
+  bool _clearedExistingImage = false;
 
   @override
   void initState() {
@@ -147,7 +148,9 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
           title: title,
           latitude: lat,
           longitude: lon,
-          imagePath: compressed?.path ?? widget.editLandmark!.imagePath,
+          imagePath: _clearedExistingImage
+              ? null
+              : (compressed?.path ?? widget.editLandmark!.imagePath),
         );
         await provider.updateLandmark(
           updated,
@@ -262,35 +265,87 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
               const SizedBox(height: 12),
               Text('Image', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  width: double.infinity,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.grey.shade200,
-                  ),
-                  child: _pickedImage != null
-                      ? AdaptiveImage(
-                          imagePath: _pickedImage!.path,
-                          imageBytes: _pickedImageBytes,
-                        )
-                      : (widget.editLandmark?.imagePath != null
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Hero(
+                      tag: 'lm_img_${widget.editLandmark?.id ?? 'new_preview'}',
+                      child: Container(
+                        width: double.infinity,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.grey.shade200,
+                        ),
+                        child: _pickedImage != null
                             ? AdaptiveImage(
-                                imagePath: widget.editLandmark!.imagePath,
+                                imagePath: _pickedImage!.path,
+                                imageBytes: _pickedImageBytes,
+                                fit: BoxFit.cover,
                               )
-                            : Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: const [
-                                    Icon(Icons.add_a_photo, size: 36),
-                                    SizedBox(height: 6),
-                                    Text('Tap to select image'),
-                                  ],
-                                ),
-                              )),
-                ),
+                            : (_clearedExistingImage
+                                  ? Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: const [
+                                          Icon(Icons.add_a_photo, size: 36),
+                                          SizedBox(height: 6),
+                                          Text('Tap to select image'),
+                                        ],
+                                      ),
+                                    )
+                                  : (widget.editLandmark?.imagePath != null
+                                        ? AdaptiveImage(
+                                            imagePath:
+                                                widget.editLandmark!.imagePath,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Center(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(
+                                                  Icons.add_a_photo,
+                                                  size: 36,
+                                                ),
+                                                SizedBox(height: 6),
+                                                Text('Tap to select image'),
+                                              ],
+                                            ),
+                                          ))),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      FilledButton.icon(
+                        onPressed: _pickImage,
+                        icon: const Icon(Icons.photo_library),
+                        label: const Text('Replace'),
+                      ),
+                      const SizedBox(width: 12),
+                      if (_pickedImage != null ||
+                          widget.editLandmark?.imagePath != null)
+                        FilledButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _pickedImage = null;
+                              _pickedImageBytes = null;
+                              _clearedExistingImage = true;
+                            });
+                          },
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('Remove'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
               const SizedBox(height: 18),
               SizedBox(

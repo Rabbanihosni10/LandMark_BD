@@ -53,6 +53,13 @@ class MockApiService {
     return null;
   }
 
+  /// Return stored image bytes for a mock image id (e.g. 'img_...').
+  Future<List<int>?> getImageBytes(String imageId) async {
+    // small simulated delay to mimic network/file read
+    await Future.delayed(const Duration(milliseconds: 120));
+    return _imageStore[imageId];
+  }
+
   Future<List<Landmark>> fetchLandmarks() async {
     await Future.delayed(const Duration(milliseconds: 500));
     return List.from(_mockData);
