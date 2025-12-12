@@ -156,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     }
 
     saveDb($db);
-    echo json_encode(current($db)); // Return updated item
+    echo json_encode(current($db));
     exit();
 }
 
@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['_method'] ?? '') === 'PUT'
     }
 
     saveDb($db);
-    echo json_encode(current($db)); // Return updated item
+    echo json_encode(current($db));
     exit();
 }
 
@@ -242,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         exit();
     }
 
-    saveDb(array_values($db)); // Reindex array
+    saveDb(array_values($db));
     echo json_encode(['message' => 'Deleted successfully']);
     exit();
 }

@@ -1,15 +1,10 @@
-// Avoid importing `dart:io` here so the code can run on web.
-
 import 'package:dio/dio.dart';
-
 import '../config.dart';
 import '../models/landmark.dart';
 import 'mock_api_service.dart';
 
 class ApiService {
-  // Use the baseUrl from config
   static String get baseUrl => ApiConfig.baseUrl;
-
   late final Dio _dio;
   late final MockApiService _mockApi;
 
@@ -25,7 +20,6 @@ class ApiService {
           ),
         );
 
-    // Add logging interceptor if enabled
     if (ApiConfig.enableLogging) {
       _dio.interceptors.add(
         LogInterceptor(

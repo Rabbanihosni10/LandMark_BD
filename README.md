@@ -219,10 +219,3 @@ flutter build ios --release
 - [Provider Documentation](https://pub.dev/packages/provider)
 - [Flutter Map Documentation](https://flutter-map.dev)
 
-## License
-
-This project is part of CSE489 course work.
-
-## Support
-
-For issues or questions, please contact the development team or submit an issue in the repository.
